@@ -13,6 +13,23 @@ resource "digitalocean_droplet" "discourse" {
   ssh_keys = [digitalocean_ssh_key.default.fingerprint]
 }
 
+resource "digitalocean_firewall" "fw" {
+  name        = "discourse-fw"
+  droplet_ids = [digitalocean_droplet.discourse.id]
+
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "443"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "587"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+}
+
 resource "digitalocean_domain" "domain" {
   name = "alldevopsconsidered.com"
 }
