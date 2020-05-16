@@ -17,15 +17,24 @@ resource "digitalocean_firewall" "fw" {
   name        = "discourse-fw"
   droplet_ids = [digitalocean_droplet.discourse.id]
 
+  # HTTPS
   inbound_rule {
     protocol         = "tcp"
     port_range       = "443"
     source_addresses = ["0.0.0.0/0", "::/0"]
   }
 
+  # SMTP
   outbound_rule {
     protocol              = "tcp"
     port_range            = "587"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # DNS
+  outbound_rule {
+    protocol              = "udp"
+    port_range            = "53"
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 }
