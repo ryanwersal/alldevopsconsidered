@@ -13,6 +13,10 @@ resource "digitalocean_droplet" "discourse" {
   ssh_keys = [digitalocean_ssh_key.default.fingerprint]
 }
 
+locals {
+  all_cidr = ["0.0.0.0/0", "::/0"]
+}
+
 resource "digitalocean_firewall" "fw" {
   name        = "discourse-fw"
   droplet_ids = [digitalocean_droplet.discourse.id]
@@ -21,21 +25,28 @@ resource "digitalocean_firewall" "fw" {
   inbound_rule {
     protocol         = "tcp"
     port_range       = "443"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  # SMTP
-  outbound_rule {
-    protocol              = "tcp"
-    port_range            = "587"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
+    source_addresses = local.all_cidr
   }
 
   # DNS
   outbound_rule {
     protocol              = "udp"
     port_range            = "53"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
+    destination_addresses = local.all_cidr
+  }
+
+  # HTTPS
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "443"
+    destination_addresses = local.all_cidr
+  }
+
+  # SMTP
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "587"
+    destination_addresses = local.all_cidr
   }
 }
 
